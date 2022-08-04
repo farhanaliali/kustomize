@@ -4,3 +4,6 @@ metadata:
   name: test-svc
 spec:
   type: NodePort
+  selector:
+    app: prod-test-svc
+

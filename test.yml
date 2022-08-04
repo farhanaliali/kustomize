@@ -1,7 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: staging-test-svc
+  labels:
+    app: test-test-svc
+  name: test-test-svc
   namespace: test
 spec:
   ports:
@@ -9,21 +11,21 @@ spec:
     protocol: TCP
     targetPort: 443
   selector:
-    app: test-svc
+    app: test-test-svc
   type: NodePort
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: test-svc
-  name: staging-test-svc
+    app: test-test-svc
+  name: test-test-svc
   namespace: test
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: test-svc
+      app: test-test-svc
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -32,7 +34,7 @@ spec:
   template:
     metadata:
       labels:
-        app: test-svc
+        app: test-test-svc
     spec:
       containers:
       - env:
@@ -132,7 +134,7 @@ spec:
           name: app-logs
       dnsPolicy: ClusterFirst
       nodeSelector:
-        eks.amazonaws.com/nodegroup: staging-ml-eu-swf-app-ng
+        eks.amazonaws.com/nodegroup: test-ml-eu-swf-app-ng
       restartPolicy: Always
       schedulerName: default-scheduler
       terminationGracePeriodSeconds: 30

@@ -3,7 +3,14 @@ kind: Deployment
 metadata:
   name: test-svc
 spec:
+   selector:
+    matchLabels:
+      app: prod-test-svc
    template:
+     metadata:
+      labels:
+        app: prod-test-svc
      spec:
         nodeSelector:
           eks.amazonaws.com/nodegroup: production-ml-eu-swf-app-ng
+

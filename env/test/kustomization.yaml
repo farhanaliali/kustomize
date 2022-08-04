@@ -3,7 +3,9 @@ kind: Kustomization
 bases:
   - ../../application
 namespace: test
-namePrefix: staging-
+namePrefix: test-
 patchesStrategicMerge:
   - deploymnet.yaml
   - service.yml
+commonLabels:
+        app: test-test-svc

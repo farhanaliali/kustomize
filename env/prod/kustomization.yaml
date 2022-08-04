@@ -7,3 +7,5 @@ namePrefix: prod-
 patchesStrategicMerge:
   - deploymnet.yaml
   - service.yml
+commonLabels:
+        app: prod-test-svc
