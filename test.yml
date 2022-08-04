@@ -2,8 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: test-test-svc
-  name: test-test-svc
+    app: test-svc-api
+  name: test-svc-api
   namespace: test
 spec:
   ports:
@@ -11,21 +11,21 @@ spec:
     protocol: TCP
     targetPort: 443
   selector:
-    app: test-test-svc
+    app: test-svc-api
   type: NodePort
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: test-test-svc
-  name: test-test-svc
+    app: test-svc-api
+  name: test-svc-api
   namespace: test
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: test-test-svc
+      app: test-svc-api
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -34,7 +34,7 @@ spec:
   template:
     metadata:
       labels:
-        app: test-test-svc
+        app: test-svc-api
     spec:
       containers:
       - env:
@@ -105,7 +105,7 @@ spec:
           periodSeconds: 10
           successThreshold: 1
           timeoutSeconds: 30
-        name: test-svc-api
+        name: svc-api
         ports:
         - containerPort: 443
           name: app-port

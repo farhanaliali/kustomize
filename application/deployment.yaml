@@ -1,15 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app: test-svc
-  name: test-svc
+  name: svc-api
   namespace: 
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: test-svc
+      app: svc-api
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -18,7 +16,7 @@ spec:
   template:
     metadata:
       labels:
-        app: test-svc
+        app: svc-api
     spec:
       containers:
       - image: public.ecr.aws/aws-observability/aws-for-fluent-bit:latest
@@ -96,7 +94,7 @@ spec:
             path: "/api/internal/monitoring/healthchecks"
             port: app-port
           timeoutSeconds: 30
-        name: test-svc-api
+        name: svc-api
         ports:
         - containerPort: 443
           protocol: TCP

@@ -8,3 +8,5 @@
 ####### RUN the Prod ENV
 
 	kubectl apply -k env/prod    OR     kubectl kustomize env/test | kubectl apply -f -
+
+

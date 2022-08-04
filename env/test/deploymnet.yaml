@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: test-svc
+  name: svc-api
 spec:
    selector:
     matchLabels:
-      app: test-test-svc
+      app: test-svc-api
    template:
      metadata:
       labels:
-        app: test-test-svc
+        app: test-svc-api
      spec:
         nodeSelector:
           eks.amazonaws.com/nodegroup: test-ml-eu-swf-app-ng

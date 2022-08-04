@@ -8,4 +8,4 @@ patchesStrategicMerge:
   - deploymnet.yaml
   - service.yml
 commonLabels:
-        app: test-test-svc
+        app: test-svc-api
