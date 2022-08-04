@@ -1,0 +1,155 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: prod-test-svc
+  namespace: prod
+spec:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 443
+  selector:
+    app: test-svc
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test-svc
+  name: prod-test-svc
+  namespace: prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-svc
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: test-svc
+    spec:
+      containers:
+      - env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: REGION
+          value: eu-west-1
+        - name: LOG_GROUP_NAME
+          value: SWF
+        - name: LOG_STREAM_NAME
+          value: $(POD_NAMESPACE)/$(POD_NAME)
+        image: public.ecr.aws/aws-observability/aws-for-fluent-bit:latest
+        name: fluent-bit
+        resources:
+          limits:
+            cpu: "0.2"
+            memory: 100Mi
+          requests:
+            cpu: "0.1"
+            memory: 50Mi
+        volumeMounts:
+        - mountPath: /fluent-bit/etc/
+          name: fluentbit-config
+        - mountPath: /var/log
+          name: app-logs
+      - env:
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: FUNCTION
+          value: ml
+        - name: REGION
+          value: eu-west-1
+        - name: STAGE
+          value: default
+        - name: APPLICATION_NAME
+          value: test-svc
+        - name: CONSUL_END_POINT
+          value: http://$(HOST_IP):8500/v1
+        - name: WORKFLOW_NAME
+          value: WORKFLOW_NAME_VALUE
+        - name: WORKFLOW_VERSION
+          value: WORKFLOW_VERSION_VALUE
+        image: 123456789012.dkr.ecr.eu-west-1.amazonaws.com/swf:test-service-20220609-v1
+        imagePullPolicy: Always
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - update-ca-certificates
+        livenessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /api/internal/monitoring/healthchecks
+            port: app-port
+            scheme: HTTPS
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 30
+        name: test-svc-api
+        ports:
+        - containerPort: 443
+          name: app-port
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /api/internal/monitoring/healthchecks
+            port: app-port
+            scheme: HTTPS
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 2000Mi
+          requests:
+            cpu: 500m
+            memory: 1024Mi
+        volumeMounts:
+        - mountPath: /etc/ssl/private/
+          name: ssl-mount
+        - mountPath: /mnt/mesos/sandbox/
+          name: app-logs
+      dnsPolicy: ClusterFirst
+      nodeSelector:
+        eks.amazonaws.com/nodegroup: production-ml-eu-swf-app-ng
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          name: fluentbit-config
+        name: fluentbit-config
+      - emptyDir: {}
+        name: app-logs
+      - name: ssl-mount
+        projected:
+          defaultMode: 420
+          sources:
+          - secret:
+              items:
+              - key: tls.crt
+                path: _wildcard_.service.consul.pem
+              - key: tls.key
+                path: _wildcard_.service.consul.key
+              name: default-cert-tls
